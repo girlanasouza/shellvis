@@ -14,17 +14,17 @@ O objetivo deste trabalho é desenvolver um interpretador de comandos (Shell) em
 
 ## Funcionalidade Básica
 
-O programa deve executar em laço contínuo, recebendo comandos de duas formas:
+O programa deve executar em laço contínuo (até que o usuário digite `exit`), recebendo comandos de duas formas:
 
-1. Interativamente, via terminal.
-2. A partir de um arquivo em modo batch.
+1. Interativamente, via terminal
+2. A partir de um arquivo em modo batch
 
 Cada comando (cada linha) deve ser interpretado como:
 
-1. Comando interno (*built-in*).
-2. Programa externo.
+1. Comando interno (*built-in*)
+2. Programa externo
 
-A execução ocorre em um processo filho, repetindo-se até que o usuário digite `exit`.
+A execução de programas externos deve ocorre em um processo filho. Built-ins podem executar no mesmo processo pai.
 
 
 ## Modos de Execução
@@ -43,60 +43,60 @@ Existem dois modos de operação:
   prompt> ./shellvis batch.txt
   ```
 
-  Nesse modo, **nenhum prompt** é exibido. O tratamento deve ser feito na função `mostra_terminal()`.
-
-Os argumentos dos comandos são separados por espaços. Não é necessário lidar com caracteres de escape ou argumentos entre aspas.
+Em ambos os modos, os argumentos dos comandos são separados por espaço(s). Não é necessário lidar com caracteres de escape ou argumentos entre aspas.
 
 
-## Comandos Internos
+## Comandos Internos (Built-in)
 
-Comandos internos não devem ser tratados como programas externos. O `shellvis` deve implementar:
+Comandos internos são implementdos como parte do código do `shellvis` e podem ser executados no mesmo processo pai. Você deve implementar os seguintes comandos:
 
-* `exit`: encerra o shell.
+* `exit`: encerra o `shellvis`
 * `cd <dir>`: altera o diretório atual para `<dir>`
-* `path <caminho> [<caminho> ...]`: define os diretório(s) de busca de executáveis
-* `pwd`: exibe o caminho absoluto do diretório atual
-* `ls`: lista o conteúdo do diretório atual, suportando as opções `-l` e `-a` conforme o funcionamento do ls original
-* `cat <arquivo>`: imprime o conteúdo de `<arquivo>`. O binário `cat <arquiv>` lê o conteúdo do arquivo no argumento e o escreve na saída padrão.
-
-
-## Redirecionamento
-
-O `shellvis` deve suportar redirecionamento de entrada e saída.
-
-* Saída para arquivo (comandos internos e programas externos):
-
-  ```
-  ls > output.out
-  ```
-
-* Entrada de arquivo (para programas externos):
-
-  ```
-  ./prog < input.in
-  ```
-
+* `path <caminho> [<caminho> ...]`: define a lista de diretórios onde o shell procura executáveis
+* `pwd`: imprime o caminho absoluto do diretório atual
 
 
 ## Programas Externos
+Programas externos são executáveis que residem no sistema de arquivos. O `shellvis` deve ser capaz de executar dois tipos de programas externos:
 
-Execução de programas externos deve seguir a forma:
+1. Binários implementados como parte do projeto
+2. Programas externos já existentes no sistema (ex: `/bin/echo`)
 
-```
-shellvis> ./prog
-```
-
-Programas externos também podem ser executados com argumentos da seguinte maneira:
+A execução deve seguir o seguinte formato:
 
 ```
-shellvis> ./prog arg1 arg2
+shellvis> nome_do_programa [arg1] [arg2] ...
 ```
 
-* Para executar o shell deverá procurar, em todos os caminhos definidos com o `built-in path`, por um executável com o nome inserido no comando
-* O programa deve ser executado em processo filho, recebendo os argumentos passados (se tiver)
-* Ao término, o shell deve exibir o valor de retorno do programa (se tiver)
+O `shellvis` deve procurar pelo `nome_do_programa` em todos os diretórios definidos com o  `built-in path`.
 
-O redirecionamento também deve ser aplicado a programas externos.
+A execução deve ocorrer em um processo filho, que recebe os argumentos passados na linha de comando.
+
+Como parte deste projeto, você deve criar os seguintes programas executáveis. É necessários que esses programas sejam implementados utilizando chamadas de sistema diretamente para a manipulação de arquivos, e não apenas encapsulando (chamando por trás) os comandos originais do sistema. 
+
+Os programas externos para serem implementados são:
+
+* `ls`: lista o conteúdo do diretório atual, suportando as opções `-l` e `-a` conforme o funcionamento do ls original
+* `cat <arquivo>`: imprime o conteúdo de `<arquivo>`. O binário `cat <arquiv>` lê o conteúdo do arquivo no argumento e o escreve na saída padrão
+* `grep [-n] <string> <arquivo>` (grep simplificado): procura pela `<string>` dentro do `<arquivo>` e escreve na saída padrão todas as linhas em que a string aparece. Não é necessário implementar suporte a expressões regulares (regex)
+* `touch <arquivo>`: cria um arquivo vazio se ele não exitir, ou atualiza a data de modificação se ele já existir
+* `rm <arquivo>`: apaga um arquivo
+* `cp <origem> <destino>`: copia o conteúdo do arquivo de `<origem>` para um arquivo `<destino>`
+
+## Redirecionamento de Saída
+
+O `shellvis` deve suportar o redirecionamento de entrada (<) e saída (>)
+
+* **Saída para arquivo**
+  ```
+  shellvis> ls -l > saida.txt
+  ```
+
+* **Entrada de arquivo**
+
+  ```
+  shellvis> ./prog < log.txt
+  ```
 
 
 ## Comandos em Paralelo
@@ -109,33 +109,23 @@ Exemplo:
 shellvis> ./prog1 & ./prog2 arg1 & ./prog3 < input.in
 ```
 
-Cada comando deve ser executado em processo separado, de forma paralela.
-
-
-## Resumo da Implementação
-
-| **Comando**        | **Funcionalidade**                                 |
-|----------------------------|---------------------------- |
-| `ls`               | lista os arquivos e diretórios do diretório atual  |
-| `cd <dir>`         | altera o diretório atual para `<dir>`              |
-| `pwd`              | mostra o caminho absoluto do diretório atual       |
-| `exit`             | encerra o shell                                    |
-| `./prog`           | executa o programa `prog`                          |
-| `./prog arg1 arg2` | executa `prog` com argumentos                      |
-| `./prog1 > output` | redireciona saída de `prog1` para `output`         |
-| `./prog1 < input`  | redireciona entrada de `prog1` a partir de `input` |
+Cada comando separado por & deve ser executado em um processo filho distinto, de forma paralela.
 
 
 ## Tratamento de Erros
+O `shellvis` deve tratar erros de forma consistente, exibindo mensagens claras e informativas para o usuário. Exemplos de erros a serem tratados:
 
-O `shellvis` deve tratar erros de forma consistente, exibindo mensagens claras e informativas.
+* Comando não encontrado
+* Arquivo de entrada para redirecionamento inexistente
+* Diretório inválido para o comando `cd`
+
 
 
 ## Entrega
 
 O material entregue deve incluir:
 
-1. Código-fonte (sem executáveis)
+1. Código-fonte (sem executáveis dp shellvis)
 2. Instruções de compilação
 3. Conjunto de testes, com entradas e saídas esperadas
 4. Relatório breve contendo:
