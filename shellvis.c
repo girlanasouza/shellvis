@@ -3,12 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 
-/* 
- * Função auxiliar para exibir o prompt do shell
-*/
 void mostrar_prompt() {
     printf("shellvis> ");
-    fflush(stdout);  // garante exibição imediata
+    fflush(stdout);  
 }
 
 
@@ -33,10 +30,6 @@ void shellvis() {
     }
 }
 
-/* 
- * Ponto de entrada do programa.
- * Os alunos NÃO devem modificar esta função.
-*/
 int main() {
     // chamada obrigatória
     shellvis();    
