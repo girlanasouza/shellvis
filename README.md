@@ -65,20 +65,20 @@ Programas externos são executáveis que residem no sistema de arquivos. O `shel
 A execução deve seguir o seguinte formato:
 
 ```
-shellvis> nome_do_programa [arg1] [arg2] ...
+shellvis> ./nome_do_programa [arg1] [arg2] ...
 ```
 
-O `shellvis` deve procurar pelo `nome_do_programa` em todos os diretórios definidos com o  `built-in path`.
+O `shellvis` deve procurar por um executável `nome_do_programa` em todos os diretórios definidos com o `built-in path`
 
-A execução deve ocorrer em um processo filho, que recebe os argumentos passados na linha de comando.
+A execução deve ocorrer em um processo filho, que recebe os argumentos passados na linha de comando (caso necessários)
 
-Como parte deste projeto, você deve criar os seguintes programas executáveis. É necessários que esses programas sejam implementados utilizando chamadas de sistema diretamente para a manipulação de arquivos, e não apenas encapsulando (chamando por trás) os comandos originais do sistema. 
+Como parte deste projeto, você deve criar os seguintes programas externos listados abaixo. É necessários que esses programas sejam implementados utilizando chamadas de sistema diretamente para a manipulação de arquivos, e não apenas encapsulando (chamando por trás) os comandos originais do sistema
 
 Os programas externos para serem implementados são:
 
 * `ls`: lista o conteúdo do diretório atual, suportando as opções `-l` e `-a` conforme o funcionamento do ls original
 * `cat <arquivo>`: imprime o conteúdo de `<arquivo>`. O binário `cat <arquiv>` lê o conteúdo do arquivo no argumento e o escreve na saída padrão
-* `grep [-n] <string> <arquivo>` (grep simplificado): procura pela `<string>` dentro do `<arquivo>` e escreve na saída padrão todas as linhas em que a string aparece. Não é necessário implementar suporte a expressões regulares (regex)
+* `grep [-n] <string> <arquivo>` (grep simplificado): procura pela `<string>` dentro do `<arquivo>` e escreve na saída padrão todas as linhas em que a string aparece. Não é necessário implementar suporte a expressões regulares (regex). O parâmetro `-n` é necessário para dizer o número de linhas
 * `touch <arquivo>`: cria um arquivo vazio se ele não exitir, ou atualiza a data de modificação se ele já existir
 * `rm <arquivo>`: apaga um arquivo
 * `cp <origem> <destino>`: copia o conteúdo do arquivo de `<origem>` para um arquivo `<destino>`
@@ -106,7 +106,7 @@ O `shellvis` deve permitir execução concorrente de múltiplos comandos com o o
 Exemplo:
 
 ```
-shellvis> ./prog1 & ./prog2 arg1 & ./prog3 < input.in
+shellvis> ls & ./prog2 arg1 & ./prog3 < input.in
 ```
 
 Cada comando separado por & deve ser executado em um processo filho distinto, de forma paralela.
@@ -116,7 +116,7 @@ Cada comando separado por & deve ser executado em um processo filho distinto, de
 O `shellvis` deve tratar erros de forma consistente, exibindo mensagens claras e informativas para o usuário. Exemplos de erros a serem tratados:
 
 * Comando não encontrado
-* Arquivo de entrada para redirecionamento inexistente
+* Erro no redirecionamento 
 * Diretório inválido para o comando `cd`
 
 
